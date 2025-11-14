@@ -133,7 +133,7 @@ async function fetchAgencyCurrency(
   const trimmedId = agencyId.trim();
   try {
     const { data, error } = await supabase
-      .from<AgencyRecord>('Tbl_Agencies')
+      .from('Tbl_Agencies')
       .select('currency,currency_code')
       .eq('agency_id', trimmedId)
       .maybeSingle();
@@ -144,15 +144,16 @@ async function fetchAgencyCurrency(
     }
 
     if (data) {
+      const record = data as AgencyRecord;
       return (
-        data.currency?.trim() ||
-        data.currency_code?.trim() ||
+        record.currency?.trim() ||
+        record.currency_code?.trim() ||
         null
       );
     }
 
     const fallback = await supabase
-      .from<AgencyRecord>('Tbl_Agencies')
+      .from('Tbl_Agencies')
       .select('currency,currency_code')
       .eq('id', trimmedId)
       .maybeSingle();
@@ -162,7 +163,7 @@ async function fetchAgencyCurrency(
       return null;
     }
 
-    const fallbackData = fallback.data;
+    const fallbackData = fallback.data as AgencyRecord | null;
     return (
       fallbackData?.currency?.trim() ||
       fallbackData?.currency_code?.trim() ||
@@ -186,7 +187,7 @@ async function fetchComponentNameMap(
 
   try {
     const { data, error } = await supabase
-      .from<FeeComponentRecord>('Tbl_Fee_Components')
+      .from('Tbl_Fee_Components')
       .select('*')
       .in('component_id', componentIds);
 
@@ -195,7 +196,7 @@ async function fetchComponentNameMap(
       return map;
     }
 
-    data?.forEach((component) => {
+    (data as FeeComponentRecord[] | null)?.forEach((component) => {
       const id = toNumber(
         component.component_id ?? component.componentId ?? component.id,
         Number.NaN,
@@ -256,8 +257,8 @@ async function handler(
   const supabase = getSupabaseServerClient();
 
   try {
-    const { data: feeRules, error: feeRulesError } = await supabase
-      .from<FeeRuleRecord>('Tbl_Fee_Rules')
+    const { data: feeRulesRaw, error: feeRulesError } = await supabase
+      .from('Tbl_Fee_Rules')
       .select('*')
       .eq('agency_id', agencyId.trim())
       .eq('procedure_id', numericProcedureId)
@@ -270,10 +271,12 @@ async function handler(
         .json({ error: 'Unable to fetch fee rules at this time.' });
     }
 
+    const feeRules = (feeRulesRaw as FeeRuleRecord[] | null) ?? [];
+
     const agencyCurrency =
       (await fetchAgencyCurrency(supabase, agencyId)) ?? 'USD';
 
-    if (!feeRules || feeRules.length === 0) {
+    if (feeRules.length === 0) {
       return res.status(200).json({
         totalFee: 0,
         currency: agencyCurrency,

@@ -27,7 +27,7 @@ export default async function handler(
   try {
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
-      .from<AgencyRow>('Tbl_Agencies')
+      .from('Tbl_Agencies')
       .select('id,agency_id,name')
       .order('name', { ascending: true });
 
@@ -37,7 +37,7 @@ export default async function handler(
     }
 
     const agencies =
-      data?.map((agency) => ({
+      (data as AgencyRow[] | null)?.map((agency) => ({
         id: agency.agency_id ?? agency.id ?? '',
         name:
           agency.name?.trim() ??

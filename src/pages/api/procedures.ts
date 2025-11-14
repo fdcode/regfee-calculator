@@ -28,7 +28,7 @@ export default async function handler(
   try {
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
-      .from<ProcedureRow>('Tbl_Procedure_Types')
+      .from('Tbl_Procedure_Types')
       .select('id,procedure_id,name,display_name')
       .order('display_name', { ascending: true });
 
@@ -38,7 +38,7 @@ export default async function handler(
     }
 
     const procedures =
-      data?.map((procedure) => ({
+      (data as ProcedureRow[] | null)?.map((procedure) => ({
         id: procedure.procedure_id ?? procedure.id ?? 0,
         name:
           procedure.display_name?.trim() ||
