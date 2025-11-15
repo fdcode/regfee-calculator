@@ -26,7 +26,6 @@ type FeeRuleRecord = {
 };
 
 type FeeComponentRecord = {
-  id?: number | null;
   component_id?: number | null;
   componentId?: number | null;
   name?: string | null;
@@ -198,7 +197,7 @@ async function fetchComponentNameMap(
 
     (data as FeeComponentRecord[] | null)?.forEach((component) => {
       const id = toNumber(
-        component.component_id ?? component.componentId ?? component.id,
+        component.component_id ?? component.componentId,
         Number.NaN,
       );
       if (Number.isNaN(id)) {

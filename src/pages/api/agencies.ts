@@ -2,7 +2,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSupabaseServerClient } from '@/lib/supabaseServer';
 
 type AgencyRow = {
-  id?: string;
   agency_id?: string;
   name?: string | null;
 };
@@ -28,7 +27,7 @@ export default async function handler(
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from('tbl_agencies')
-      .select('id,agency_id,name')
+      .select('agency_id,name')
       .order('name', { ascending: true });
 
     if (error) {
@@ -38,12 +37,8 @@ export default async function handler(
 
     const agencies =
       (data as AgencyRow[] | null)?.map((agency) => ({
-        id: agency.agency_id ?? agency.id ?? '',
-        name:
-          agency.name?.trim() ??
-          agency.agency_id ??
-          agency.id ??
-          'Untitled Agency',
+        id: agency.agency_id ?? '',
+        name: agency.name?.trim() ?? agency.agency_id ?? 'Untitled Agency',
       })) ?? [];
 
     return res.status(200).json({ agencies });

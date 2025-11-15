@@ -2,7 +2,6 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSupabaseServerClient } from '@/lib/supabaseServer';
 
 type ProcedureRow = {
-  id?: number;
   procedure_id?: number;
   name?: string | null;
   display_name?: string | null;
@@ -29,7 +28,7 @@ export default async function handler(
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from('tbl_procedure_types')
-      .select('id,procedure_id,name,display_name')
+      .select('procedure_id,name,display_name')
       .order('display_name', { ascending: true });
 
     if (error) {
@@ -39,11 +38,11 @@ export default async function handler(
 
     const procedures =
       (data as ProcedureRow[] | null)?.map((procedure) => ({
-        id: procedure.procedure_id ?? procedure.id ?? 0,
+        id: procedure.procedure_id ?? 0,
         name:
           procedure.display_name?.trim() ||
           procedure.name?.trim() ||
-          `Procedure ${procedure.id ?? ''}`,
+          `Procedure ${procedure.procedure_id ?? ''}`,
       })) ?? [];
 
     return res.status(200).json({ procedures });
