@@ -44,16 +44,17 @@ export default async function handler(
           agency.agencyid ??
           agency.id ??
           '';
-        const friendlyName =
-          agency.name?.trim() ??
-          agency.agency_id ??
-          agency.agencyid ??
-          stableId ||
-          'Untitled Agency';
+
+        const fallbacks = [
+          agency.name?.trim(),
+          agency.agency_id,
+          agency.agencyid,
+          stableId,
+        ].filter((value): value is string => Boolean(value));
 
         return {
           id: stableId,
-          name: friendlyName,
+          name: fallbacks[0] ?? 'Untitled Agency',
         };
       }) ?? [];
 
