@@ -2,10 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSupabaseServerClient } from '@/lib/supabaseServer';
 
 type AgencyRow = {
-  id?: string | null;
-  agency_id?: string | null;
   agencyid?: string | null;
-  name?: string | null;
+  agencyname?: string | null;
+  currency?: string | null;
 };
 
 type AgenciesResponse =
@@ -29,8 +28,8 @@ export default async function handler(
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from('tbl_agencies')
-      .select('*')
-      .order('name', { ascending: true });
+      .select('agencyid,agencyname,currency')
+      .order('agencyname', { ascending: true });
 
     if (error) {
       console.error('Failed to load agencies:', error);
@@ -38,25 +37,10 @@ export default async function handler(
     }
 
     const agencies =
-      (data as AgencyRow[] | null)?.map((agency) => {
-        const stableId =
-          agency.agency_id ??
-          agency.agencyid ??
-          agency.id ??
-          '';
-
-        const fallbacks = [
-          agency.name?.trim(),
-          agency.agency_id,
-          agency.agencyid,
-          stableId,
-        ].filter((value): value is string => Boolean(value));
-
-        return {
-          id: stableId,
-          name: fallbacks[0] ?? 'Untitled Agency',
-        };
-      }) ?? [];
+      (data as AgencyRow[] | null)?.map((agency) => ({
+        id: agency.agencyid ?? '',
+        name: agency.agencyname?.trim() ?? agency.agencyid ?? 'Untitled Agency',
+      })) ?? [];
 
     return res.status(200).json({ agencies });
   } catch (error) {
