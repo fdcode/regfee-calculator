@@ -133,7 +133,7 @@ async function fetchAgencyCurrency(
   const trimmedId = agencyId.trim();
   try {
     const { data, error } = await supabase
-      .from('Tbl_Agencies')
+      .from('tbl_agencies')
       .select('currency,currency_code')
       .eq('agency_id', trimmedId)
       .maybeSingle();
@@ -153,7 +153,7 @@ async function fetchAgencyCurrency(
     }
 
     const fallback = await supabase
-      .from('Tbl_Agencies')
+      .from('tbl_agencies')
       .select('currency,currency_code')
       .eq('id', trimmedId)
       .maybeSingle();
@@ -187,7 +187,7 @@ async function fetchComponentNameMap(
 
   try {
     const { data, error } = await supabase
-      .from('Tbl_Fee_Components')
+      .from('tbl_fee_components')
       .select('*')
       .in('component_id', componentIds);
 
@@ -258,7 +258,7 @@ async function handler(
 
   try {
     const { data: feeRulesRaw, error: feeRulesError } = await supabase
-      .from('Tbl_Fee_Rules')
+      .from('tbl_fee_rules')
       .select('*')
       .eq('agency_id', agencyId.trim())
       .eq('procedure_id', numericProcedureId)

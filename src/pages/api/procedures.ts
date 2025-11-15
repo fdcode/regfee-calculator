@@ -28,7 +28,7 @@ export default async function handler(
   try {
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
-      .from('Tbl_Procedure_Types')
+      .from('tbl_procedure_types')
       .select('id,procedure_id,name,display_name')
       .order('display_name', { ascending: true });
 

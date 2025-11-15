@@ -27,7 +27,7 @@ export default async function handler(
   try {
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
-      .from('Tbl_Agencies')
+      .from('tbl_agencies')
       .select('id,agency_id,name')
       .order('name', { ascending: true });
 
