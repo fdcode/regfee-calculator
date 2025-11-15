@@ -2,9 +2,12 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSupabaseServerClient } from '@/lib/supabaseServer';
 
 type ProcedureRow = {
-  procedure_id?: number;
+  id?: number | null;
+  procedure_id?: number | string | null;
+  procedureid?: number | string | null;
   name?: string | null;
   display_name?: string | null;
+  displayname?: string | null;
 };
 
 type ProceduresResponse =
@@ -28,7 +31,7 @@ export default async function handler(
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from('tbl_procedure_types')
-      .select('procedure_id,name,display_name')
+      .select('*')
       .order('display_name', { ascending: true });
 
     if (error) {
@@ -37,13 +40,28 @@ export default async function handler(
     }
 
     const procedures =
-      (data as ProcedureRow[] | null)?.map((procedure) => ({
-        id: procedure.procedure_id ?? 0,
-        name:
-          procedure.display_name?.trim() ||
-          procedure.name?.trim() ||
-          `Procedure ${procedure.procedure_id ?? ''}`,
-      })) ?? [];
+      (data as ProcedureRow[] | null)?.map((procedure) => {
+        const stableIdRaw =
+          procedure.procedure_id ??
+          procedure.procedureid ??
+          procedure.id ??
+          0;
+        const stableId =
+          typeof stableIdRaw === 'string'
+            ? Number(stableIdRaw)
+            : stableIdRaw ?? 0;
+
+        const displayName =
+          procedure.display_name?.trim() ??
+          procedure.displayname?.trim() ??
+          procedure.name?.trim() ??
+          `Procedure ${stableId || ''}`;
+
+        return {
+          id: stableId,
+          name: displayName,
+        };
+      }) ?? [];
 
     return res.status(200).json({ procedures });
   } catch (error) {

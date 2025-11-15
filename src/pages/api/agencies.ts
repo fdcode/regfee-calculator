@@ -2,7 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSupabaseServerClient } from '@/lib/supabaseServer';
 
 type AgencyRow = {
-  agency_id?: string;
+  id?: string | null;
+  agency_id?: string | null;
+  agencyid?: string | null;
   name?: string | null;
 };
 
@@ -27,7 +29,7 @@ export default async function handler(
     const supabase = getSupabaseServerClient();
     const { data, error } = await supabase
       .from('tbl_agencies')
-      .select('agency_id,name')
+      .select('*')
       .order('name', { ascending: true });
 
     if (error) {
@@ -36,10 +38,24 @@ export default async function handler(
     }
 
     const agencies =
-      (data as AgencyRow[] | null)?.map((agency) => ({
-        id: agency.agency_id ?? '',
-        name: agency.name?.trim() ?? agency.agency_id ?? 'Untitled Agency',
-      })) ?? [];
+      (data as AgencyRow[] | null)?.map((agency) => {
+        const stableId =
+          agency.agency_id ??
+          agency.agencyid ??
+          agency.id ??
+          '';
+        const friendlyName =
+          agency.name?.trim() ??
+          agency.agency_id ??
+          agency.agencyid ??
+          stableId ||
+          'Untitled Agency';
+
+        return {
+          id: stableId,
+          name: friendlyName,
+        };
+      }) ?? [];
 
     return res.status(200).json({ agencies });
   } catch (error) {
